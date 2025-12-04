@@ -66,41 +66,80 @@
 </div>
 
 <!-- КВЕСТ -->
+<!-- ======== КВЕСТ — 10 питань ======== -->
 <div id="quest" class="content">
   <h2>Який ти мем воєнного часу?</h2>
+
   <div class="progress-container">
     <div class="progress-label">Твій шлях:</div>
     <div id="progress"></div>
     <div id="progressText">Питання 1 з 10</div>
   </div>
+
   <div id="questions">
+
     <div class="q active" id="q1"><p><strong>1.</strong> Повітряна тривога. Ти:</p>
-      <button onclick="ans(1,'a')">Біжу в укриття з котом і борщем</button>
+      <button onclick="ans(1,'a')">Біжиш в укриття з котом, борщем і пледом</button>
       <button onclick="ans(1,'b')">«Та я ще 5 хвилин полежу…»</button>
-      <button onclick="ans(1,'c')">Вмикаю «Байрактар» на всю</button>
+      <button onclick="ans(1,'c')">Вмикаєш «Байрактар» на всю і танцюєш</button>
     </div>
-    <div class="q" id="q2"><p><strong>2.</strong> Побачив «бавовну»:</p>
-      <button onclick="ans(2,'a')">Пишу «Чорнобаївка №37»</button>
-      <button onclick="ans(2,'b')">Ставлю ❤️ під постом ЗСУ</button>
-      <button onclick="ans(2,'c')">Шукаю мем «прилетіло точно»</button>
+
+    <div class="q" id="q2"><p><strong>2.</strong> В новинах «200-й»:</p>
+      <button onclick="ans(2,'a')">Пишеш «Чорнобаївка №38»</button>
+      <button onclick="ans(2,'b')">Ставиш сердечко під пост ЗСУ</button>
+      <button onclick="ans(2,'c')">Шукаєш мем «прилетіло точно в штаб»</button>
     </div>
+
     <div class="q" id="q3"><p><strong>3.</strong> Тобі пропонують «русскій мір»:</p>
       <button onclick="ans(3,'a')">«Паляниця?»</button>
       <button onclick="ans(3,'b')">«Доброго вечора, ми з України»</button>
-      <button onclick="ans(3,'c')">Показую мем з кораблем</button>
+      <button onclick="ans(3,'c')">Просто показуєш мем з кораблем</button>
     </div>
+
     <div class="q" id="q4"><p><strong>4.</strong> Вимкнули світло:</p>
-      <button onclick="ans(4,'a')">Свічки + чай = романтика</button>
-      <button onclick="ans(4,'b')">Генератор вмикаю першим</button>
-      <button onclick="ans(4,'c')">Живу на сонячних батарейках</button>
+      <button onclick="ans(4,'a')">Свічки, чай, плед — романтика</button>
+      <button onclick="ans(4,'b')">Генератор вмикаєш першим у дворі</button>
+      <button onclick="ans(4,'c')">«Та я і так на сонячних батарейках»</button>
     </div>
-    <div class="q" id="q5"><p><strong>5.</strong> Улюблений герой:</p>
+
+    <div class="q" id="q5"><p><strong>5.</strong> Твій улюблений герой:</p>
       <button onclick="ans(5,'a')">Пес Патрон</button>
-      <button onclick="ans(5,'b')">Тракторист</button>
-      <button onclick="ans(5,'c')">Бабуся з огірками</button>
+      <button onclick="ans(5,'b')">Тракторист, що тягне танк</button>
+      <button onclick="ans(5,'c')">Бабуся з банкою огірків</button>
     </div>
-    <!-- Додай ще 5 питань сам — або я зроблю за 1 хвилину -->
+
+    <div class="q" id="q6"><p><strong>6.</strong> Найкращий саундтрек війни:</p>
+      <button onclick="ans(6,'a')">«Ой у лузі червона калина»</button>
+      <button onclick="ans(6,'b')">«Байрактар» (ремікс)</button>
+      <button onclick="ans(6,'c')">«Доброго вечора, ми з України»</button>
+    </div>
+
+    <div class="q" id="q7"><p><strong>7.</strong> Ти на блокпосту:</p>
+      <button onclick="ans(7,'a')">Пригощаєш ЗСУ домашніми смаколиками</button>
+      <button onclick="ans(7,'b')">Фоткаєшся з Джавеліном</button>
+      <button onclick="ans(7,'c')">Кричиш «Слава Україні!» і обіймаєш хлопців</button>
+    </div>
+
+    <div class="q" id="q8"><p><strong>8.</strong> Черга за сіллю:</p>
+      <button onclick="ans(8,'a')">Береш 10 пачок — про запас</button>
+      <button onclick="ans(8,'b')">Робиш мем «сіль закінчилась»</button>
+      <button onclick="ans(8,'c')">Віддаєш свою пачку бабусі</button>
+    </div>
+
+    <div class="q" id="q9"><p><strong>9.</strong> Найсмішніше для тебе:</p>
+      <button onclick="ans(9,'a')">Коли трактор тягне танк</button>
+      <button onclick="ans(9,'b')">Коли окупант не вимовляє «паляниця»</button>
+      <button onclick="ans(9,'c')">Коти з Бахмута</button>
+    </div>
+
+    <div class="q" id="q10"><p><strong>10.</strong> Твоя суперсила:</p>
+      <button onclick="ans(10,'a')">Віра в ЗСУ</button>
+      <button onclick="ans(10,'b')">Гумор, який не пробити</button>
+      <button onclick="ans(10,'c')">Любов до України</button>
+    </div>
+
   </div>
+
   <div id="finalResult" class="result hidden"></div>
 </div>
 
@@ -216,6 +255,8 @@ function showGallery() {
 }
 
 // === КВЕСТ ===
+let answers = new Array(10).fill(null);
+
 function updateProgress() {
   const p = document.getElementById('progress');
   p.innerHTML = '';
@@ -225,7 +266,8 @@ function updateProgress() {
       b.textContent = i+1;
       b.className = 'not-answered';
     } else {
-      b.textContent = answers[i]==='a' ? 'Palianytsia' : answers[i]==='b' ? 'Ship' : 'Tractor';
+      const label = answers[i]==='a' ? 'Palianytsia' : answers[i]==='b' ? 'Ship' : 'Tractor';
+      b.textContent = label;
       b.className = answers[i]==='a' ? 'answered-a' : answers[i]==='b' ? 'answered-b' : 'answered-c';
       b.onclick = () => goToQuestion(i+1);
     }
@@ -250,24 +292,33 @@ function goToQuestion(n) {
 }
 
 function showQuestResult() {
-  const count = {a:0,b:0,c:0};
+  const count = {a:0, b:0, c:0};
   answers.forEach(x=>count[x]++);
   const max = Object.keys(count).reduce((a,b)=>count[a]>=count[b]?a:b);
-  const res = {
-    a: {name:"Паляниця", txt:"Ти — найсильніший пароль України!", img:"https://i.ibb.co/4pQ8hZc/palianytsya1.jpg"},
-    b: {name:"Русскій воєнний корабель", txt:"Коротко. Влучно. Історично.", img:"https://i.ibb.co/09T1s1Q/ship.jpg"},
-    c: {name:"Український трактор", txt:"Тягнеш танки додому!", img:"https://i.ibb.co/4pQ8hZc/tractor1.jpg"}
-  }[max];
+
+  const results = {
+    a: {name:"Паляниця", text:"Ти — найсильніший пароль України! Ворог тебе ніколи не вимовить!", img:"https://i.ibb.co/4pQ8hZc/palianytsya1.jpg"},
+    b: {name:"Русскій воєнний корабель", text:"Коротко, влучно і назавжди в підручниках історії!", img:"https://i.ibb.co/09T1s1Q/ship.jpg"},
+    c: {name:"Український трактор", text:"ЗСУ ще не доїхали, а ти вже тягнеш танк додому!", img:"https://i.ibb.co/4pQ8hZc/tractor1.jpg"},
+    // можна додати ще за бажанням
+  };
+
+  const r = results[max];
   document.getElementById('finalResult').innerHTML = `
-    <h2>ТИ — ${res.name}!</h2>
-    <p style="font-size:1.6em;">${res.txt}</p>
-    <img src="${res.img}">
-    <br><br><button onclick="location.reload()">Пройти ще раз</button>
+    <h2>ТИ — ${r.name}!</h2>
+    <p style="font-size:1.6em;">${r.text}</p>
+    <img src="${r.img}">
+    <br><br>
+    <button onclick="location.reload()">Пройти ще раз</button>
+    <button onclick="openTab('gallery')">Перейти до каталогу</button>
   `;
   document.getElementById('finalResult').classList.remove('hidden');
   document.getElementById('questions').style.display = 'none';
   document.querySelector('.progress-container').style.display = 'none';
 }
+
+// Старт
+updateProgress();
 
 // === ВКЛАДКИ ===
 function openTab(id) {
