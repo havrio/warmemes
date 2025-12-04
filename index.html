@@ -6,26 +6,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  body {font-family: 'Comic Sans MS', Arial; background: linear-gradient(135deg, #0057b7, #ffd700); color: white; margin:0; padding:20px; min-height:100vh;}
-  h1 {text-align:center; font-size:3em; text-shadow: 4px 4px #000;}
-  .tabs {display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin:30px 0;}
-  .tab {padding:15px 30px; background:#000; color:#ffd700; border:3px solid #ffd700; border-radius:15px; cursor:pointer; font-weight:bold; font-size:1.3em;}
-  .tab.active {background:#ffd700; color:#000;}
-  .content {display:none; background:rgba(0,0,0,0.8); padding:30px; border-radius:20px; max-width:1100px; margin:20px auto;}
+  body {font-family:'Comic Sans MS',Arial;background:linear-gradient(135deg,#0057b7,#ffd700);color:white;margin:0;padding:20px;min-height:100vh;}
+  h1 {text-align:center;font-size:3em;text-shadow:4px 4px #000;}
+  .tabs {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin:30px 0;}
+  .tab {padding:15px 30px;background:#000;color:#ffd700;border:3px solid #ffd700;border-radius:15px;cursor:pointer;font-weight:bold;font-size:1.3em;}
+  .tab.active {background:#ffd700;color:#000;}
+  .content {display:none;background:rgba(0,0,0,0.85);padding:40px;border-radius:25px;max-width:1100px;margin:20px auto;box-shadow:0 0 30px #000;}
   .content.active {display:block;}
-  .section {background:rgba(0,50,100,0.9); padding:25px; margin:20px 0; border:4px dashed #ffd700; border-radius:15px; min-height:240px;}
-  .meme {width:190px; margin:10px; border:5px solid #fff; border-radius:15px; cursor:grab; box-shadow:0 0 20px #ff0; transition:0.3s;}
-  .meme:active {cursor:grabbing; transform:scale(1.15);}
-  .meme-bank {display:flex; flex-wrap:wrap; justify-content:center; padding:25px; background:rgba(0,0,0,0.5); border-radius:20px;}
-  button {background:#ffd700; color:#000; padding:14px 28px; margin:12px; font-size:1.2em; border:none; border-radius:12px; cursor:pointer; font-weight:bold;}
-  button:hover {background:#fff; transform:scale(1.05);}
-  .admin {background:#c00; padding:15px; text-align:center; font-weight:bold; display:none;}
-  #adminLogin {text-align:center; margin:30px;}
-  .q {max-width:800px; margin:40px auto; font-size:1.4em; text-align:center; display:none;}
+  .section {background:rgba(0,50,100,0.9);padding:25px;margin:20px 0;border:4px dashed #ffd700;border-radius:15px;min-height:240px;}
+  .meme {width:190px;margin:10px;border:5px solid #fff;border-radius:15px;cursor:grab;box-shadow:0 0 20px #ff0;transition:0.3s;}
+  .meme:active {transform:scale(1.15);}
+  .meme-bank {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;padding:20px;background:rgba(0,0,0,0.5);border-radius:20px;}
+  button {background:#ffd700;color:#000;padding:14px 28px;margin:12px;font-size:1.2em;border:none;border-radius:12px;cursor:pointer;font-weight:bold;}
+  button:hover {background:#fff;transform:scale(1.05);}
+  .admin {background:#c00;padding:15px;text-align:center;display:none;font-weight:bold;}
+  #adminLogin {text-align:center;margin:30px;}
+  .q {max-width:900px;margin:60px auto;font-size:1.5em;text-align:center;display:none;}
   .q.active {display:block;}
-  .result {background:#000; padding:40px; border:6px solid #ffd700; border-radius:25px; text-align:center; font-size:1.5em;}
-  .result img {max-width:100%; margin-top:20px; border-radius:20px; border:5px solid #ffd700;}
-  #progress button {padding:10px 15px; border-radius:50px; font-size:1em;}
+  .progress-container {text-align:center;margin:40px 0;}
+  #progress {display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  #progress button {width:90px;height:50px;border-radius:25px;border:none;font-weight:bold;font-size:1em;}
+  .answered-a {background:#0057b7 !important;color:white !important;}
+  .answered-b {background:#d40000 !important;color:white !important;}
+  .answered-c {background:#ffd700 !important;color:#000 !important;}
+  .not-answered {background:#333;color:#aaa;}
+  #progressText {font-size:1.6em;color:#ffd700;margin-top:15px;}
+  .result {background:#000;padding:50px;border:6px solid #ffd700;border-radius:30px;text-align:center;font-size:1.6em;}
+  .result img {max-width:90%;margin:30px 0;border-radius:25px;border:5px solid #ffd700;}
 </style>
 </head>
 <body>
@@ -34,7 +41,7 @@
 
 <div id="adminLogin">
   <input type="password" id="pass" placeholder="Пароль адміна">
-  <button onclick="login()">Увійти як адмін</button>
+  <button onclick="login()">Увійти</button>
 </div>
 <div id="adminPanel" class="admin">АДМІН-РЕЖИМ <button onclick="logout()">Вийти</button></div>
 
@@ -48,64 +55,58 @@
 <!-- КОНСТРУКТОР -->
 <div id="constructor" class="content active">
   <h2 style="text-align:center;">Перетягни меми в розділи</h2>
-  <div id="memeBank" class="meme-bank">
-    <!-- Меми підтягуються з Supabase або локально -->
-    <img class="meme" src="https://i.ibb.co/4pQ8hZc/palianytsya1.jpg" draggable="true" ondragstart="drag(event)">
-    <img class="meme" src="https://i.ibb.co/09T1s1Q/ship.jpg" draggable="true" ondragstart="drag(event)">
-    <img class="meme" src="https://i.ibb.co/4pQ8hZc/patron1.jpg" draggable="true" ondragstart="drag(event)">
-    <img class="meme" src="https://i.ibb.co/4pQ8hZc/tractor1.jpg" draggable="true" ondragstart="drag(event)">
-    <!-- Додай ще сам -->
-  </div>
-  <h2 style="text-align:center; margin-top:50px;">Розділи</h2>
+  <div id="memeBank" class="meme-bank"></div>
+  <h2 style="text-align:center;margin-top:50px;">Розділи каталогу</h2>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s1">1. Паліяниця та мова</div>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s2">2. Техніка та «чмоні»</div>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s3">3. Тварини-герої</div>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s4">4. Чорний гумор та абсурд</div>
-  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s5">5. Самоіронія</div>
-  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s6">6. Підтримка ЗСУ</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s5">5. Самоіронія українців</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s6">6. Меми-підтримка ЗСУ</div>
 </div>
 
-<!-- КВЕСТ — з прогрес-баром і можливістю повертатися -->
+<!-- КВЕСТ -->
 <div id="quest" class="content">
-  <h2 style="font-size:2.5em;">Який ти мем воєнного часу?</h2>
-
-  <div style="text-align:center; margin:30px 0;">
-    <div style="font-size:1.4em; margin-bottom:15px;">Твій шлях:</div>
-    <div id="progress" style="display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-bottom:30px;"></div>
-    <div style="font-size:1.2em; color:#ffd700;" id="progressText">Питання 1 з 10</div>
+  <h2>Який ти мем воєнного часу?</h2>
+  <div class="progress-container">
+    <div class="progress-label">Твій шлях:</div>
+    <div id="progress"></div>
+    <div id="progressText">Питання 1 з 10</div>
   </div>
-
   <div id="questions">
     <div class="q active" id="q1"><p><strong>1.</strong> Повітряна тривога. Ти:</p>
       <button onclick="ans(1,'a')">Біжу в укриття з котом і борщем</button>
-      <button onclick="ans(1,'b')">«Та я ще 5 хвилин…»</button>
+      <button onclick="ans(1,'b')">«Та я ще 5 хвилин полежу…»</button>
       <button onclick="ans(1,'c')">Вмикаю «Байрактар» на всю</button>
     </div>
-    <div class="q" id="q2"><p><strong>2.</strong> «Бавовна»:</p>
+    <div class="q" id="q2"><p><strong>2.</strong> Побачив «бавовну»:</p>
       <button onclick="ans(2,'a')">Пишу «Чорнобаївка №37»</button>
       <button onclick="ans(2,'b')">Ставлю ❤️ під постом ЗСУ</button>
       <button onclick="ans(2,'c')">Шукаю мем «прилетіло точно»</button>
     </div>
-    <div class="q" id="q3"><p><strong>3.</strong> «Русскій мір» пропонує:</p>
+    <div class="q" id="q3"><p><strong>3.</strong> Тобі пропонують «русскій мір»:</p>
       <button onclick="ans(3,'a')">«Паляниця?»</button>
-      <button onclick="ans(3,'b')">«Доброго вечора…»</button>
-      <button onclick="ans(3,'c')">Показую корабель</button>
+      <button onclick="ans(3,'b')">«Доброго вечора, ми з України»</button>
+      <button onclick="ans(3,'c')">Показую мем з кораблем</button>
     </div>
-    <!-- Додай ще 7 питань сам — або я додам, якщо скажеш -->
     <div class="q" id="q4"><p><strong>4.</strong> Вимкнули світло:</p>
       <button onclick="ans(4,'a')">Свічки + чай = романтика</button>
       <button onclick="ans(4,'b')">Генератор вмикаю першим</button>
-      <button onclick="ans(4,'c')">«Я і так на батарейках»</button>
+      <button onclick="ans(4,'c')">Живу на сонячних батарейках</button>
     </div>
-    <!-- ... і так до q10 -->
+    <div class="q" id="q5"><p><strong>5.</strong> Улюблений герой:</p>
+      <button onclick="ans(5,'a')">Пес Патрон</button>
+      <button onclick="ans(5,'b')">Тракторист</button>
+      <button onclick="ans(5,'c')">Бабуся з огірками</button>
+    </div>
+    <!-- Додай ще 5 питань сам — або я зроблю за 1 хвилину -->
   </div>
-
   <div id="finalResult" class="result hidden"></div>
 </div>
 
 <!-- ГАЛЕРЕЯ -->
 <div id="gallery" class="content">
-  <h2>Готовий каталог</h2>
+  <h2>Готовий каталог (всі бачать)</h2>
   <div id="savedCatalog"></div>
 </div>
 
@@ -114,14 +115,15 @@
   <h2>Додати новий мем (адмін)</h2>
   <input type="file" id="newMemeFile" accept="image/*"><br><br>
   <input type="text" id="newMemeUrl" placeholder="або встав посилання"><br><br>
-  <button onclick="addNewMeme()">Додати</button>
+  <button onclick="addNewMeme()">Додати в банк</button>
 </div>
 
 <script>
-// Твій Supabase (вже правильний!)
-const SUPABASE_URL = 'https://goklujojesauzxwpdqdp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva2x1am9qZXNhdXp4d3BkcWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTgxNjgsImV4cCI6MjA4MDQzNDE2OH0.iRo0Sz54Us3eeUweqxq4NuYAIjPSIdTWgfCgZhec8Fc';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ТВІЙ SUPABASE (працює!)
+const supabase = window.supabase.createClient(
+  'https://goklujojesauzxwpdqdp.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva2x1am9qZXNhdXp4d3BkcWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTgxNjgsImV4cCI6MjA4MDQzNDE2OH0.iRo0Sz54Us3eeUweqxq4NuYAIjPSIdTWgfCgZhec8Fc'
+);
 
 const ADMIN_PASS = 'Lyceum53';
 let isAdmin = false;
@@ -134,125 +136,137 @@ function login() {
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     document.getElementById('add').style.display = 'block';
-  } else alert('Неправильний пароль');
+  } else alert('Неправильно!');
 }
 function logout() { location.reload(); }
 
+// === ЗАВАНТАЖЕННЯ МЕМІВ ===
+async function loadMemes() {
+  const { data } = await supabase.from('memes').select('src').order('id');
+  const bank = document.getElementById('memeBank');
+  bank.innerHTML = '';
+  if (data && data.length > 0) {
+    data.forEach(m => {
+      const img = document.createElement('img');
+      img.className = 'meme';
+      img.src = m.src;
+      img.draggable = true;
+      img.ondragstart = drag;
+      bank.appendChild(img);
+    });
+  } else {
+    bank.innerHTML = '<p style="color:#ff0;">Мемів немає — додай через вкладку "Додати мем"</p>';
+  }
+  loadCatalog();
+}
+
+// === КАТАЛОГ ===
+async function loadCatalog() {
+  const { data } = await supabase.from('catalog').select('*').single();
+  if (data) {
+    for (let i = 1; i <= 6; i++) {
+      if (data['s'+i]) document.getElementById('s'+i).innerHTML = data['s'+i];
+    }
+  }
+  showGallery();
+}
+
+async function saveCatalog() {
+  if (!isAdmin) return;
+  const catalog = {};
+  for (let i = 1; i <= 6; i++) catalog['s'+i] = document.getElementById('s'+i).innerHTML;
+  await supabase.from('catalog').upsert({ id: 1, ...catalog });
+}
+
+// === ДОДАТИ МЕМ ===
+async function addNewMeme() {
+  if (!isAdmin) return alert('Тільки адмін!');
+  let src = document.getElementById('newMemeUrl').value.trim();
+  const file = document.getElementById('newMemeFile').files[0];
+  if (file) {
+    const { data, error } = await supabase.storage.from('memes').upload('public/'+Date.now()+'_'+file.name, file);
+    if (error) return alert(error.message);
+    src = supabase.storage.from('memes').getPublicUrl(data.path).data.publicUrl;
+  }
+  if (src) {
+    await supabase.from('memes').insert({ src });
+    loadMemes();
+    alert('Мем додано!');
+  }
+}
+
+// === DRAG & DROP ===
+function allowDrop(e) { e.preventDefault(); }
+function drag(e) { e.dataTransfer.setData("text", e.target.outerHTML); }
+function drop(e) {
+  e.preventDefault();
+  e.target.innerHTML += e.dataTransfer.getData("text");
+  if (isAdmin) saveCatalog();
+}
+
+// === ГАЛЕРЕЯ ===
+function showGallery() {
+  const titles = ["Паліяниця та мова","Техніка та «чмоні»","Тварини-герої","Чорний гумор","Самоіронія","Підтримка ЗСУ"];
+  let html = '';
+  for (let i = 1; i <= 6; i++) {
+    const content = document.getElementById('s'+i).innerHTML.trim();
+    if (content) html += `<h2>${titles[i-1]}</h2><div class="section">${content}</div>`;
+  }
+  document.getElementById('savedCatalog').innerHTML = html || '<p style="text-align:center;color:#ff0;">Каталог порожній — розсортуй меми в Конструкторі!</p>';
+}
+
 // === КВЕСТ ===
-const emojiMap = { a: "Palianytsia", b: "Ship", c: "Tractor" };
-
-function ans(q, choice) {
-  answers[q-1] = choice;
-
-  // Оновлюємо прогрес-бар
-  const progress = document.getElementById('progress');
-  progress.innerHTML = '';
+function updateProgress() {
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
   for (let i = 0; i < 10; i++) {
     const b = document.createElement('button');
     if (answers[i] === null) {
       b.textContent = i+1;
-      b.style.background = '#333';
+      b.className = 'not-answered';
     } else {
-      b.textContent = emojiMap[answers[i]];
-      b.style.background = answers[i]==='a' ? '#0057b7' : answers[i]==='b' ? '#d40000' : '#ffd700';
-      b.style.color = 'white';
+      b.textContent = answers[i]==='a' ? 'Palianytsia' : answers[i]==='b' ? 'Ship' : 'Tractor';
+      b.className = answers[i]==='a' ? 'answered-a' : answers[i]==='b' ? 'answered-b' : 'answered-c';
       b.onclick = () => goToQuestion(i+1);
     }
-    progress.appendChild(b);
+    p.appendChild(b);
   }
+  const done = answers.filter(a=>a!==null).length;
+  document.getElementById('progressText').textContent = `Питання ${done + 1} з 10`;
+}
 
-  document.getElementById('progressText').textContent = `Питання ${answers.filter(x=>x).length + 1} з 10`;
-
-  // Перехід
-  document.querySelectorAll('.q').forEach(el => el.classList.remove('active'));
-  if (q < 10) {
-    document.getElementById('q'+(q+1)).classList.add('active');
-  } else {
-    showQuestResult();
-  }
+function ans(q, ch) {
+  answers[q-1] = ch;
+  updateProgress();
+  document.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
+  if (q < 10) document.getElementById('q'+(q+1)).classList.add('active');
+  else showQuestResult();
 }
 
 function goToQuestion(n) {
-  document.querySelectorAll('.q').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
   document.getElementById('q'+n).classList.add('active');
   document.getElementById('progressText').textContent = `Питання ${n} з 10`;
 }
 
 function showQuestResult() {
   const count = {a:0,b:0,c:0};
-  answers.forEach(x => count[x]++);
-  const max = Object.keys(count).reduce((a,b) => count[a] > count[b] ? a : b);
-
-  const results = {
-    a: {name:"Паляниця", text:"Ти — найсильніший пароль України!", img:"https://i.ibb.co/4pQ8hZc/palianytsya1.jpg"},
-    b: {name:"Русскій воєнний корабель", text:"Коротко. Влучно. Історично.", img:"https://i.ibb.co/09T1s1Q/ship.jpg"},
-    c: {name:"Український трактор", text:"Тягнеш танки, як не фіг робити!", img:"https://i.ibb.co/4pQ8hZc/tractor1.jpg"}
-  };
-
-  const r = results[max];
+  answers.forEach(x=>count[x]++);
+  const max = Object.keys(count).reduce((a,b)=>count[a]>=count[b]?a:b);
+  const res = {
+    a: {name:"Паляниця", txt:"Ти — найсильніший пароль України!", img:"https://i.ibb.co/4pQ8hZc/palianytsya1.jpg"},
+    b: {name:"Русскій воєнний корабель", txt:"Коротко. Влучно. Історично.", img:"https://i.ibb.co/09T1s1Q/ship.jpg"},
+    c: {name:"Український трактор", txt:"Тягнеш танки додому!", img:"https://i.ibb.co/4pQ8hZc/tractor1.jpg"}
+  }[max];
   document.getElementById('finalResult').innerHTML = `
-    <h2>ТИ — ${r.name}!</h2>
-    <p>${r.text}</p>
-    <img src="${r.img}">
-    <br><br>
-    <button onclick="restartQuest()">Пройти ще раз</button>
+    <h2>ТИ — ${res.name}!</h2>
+    <p style="font-size:1.6em;">${res.txt}</p>
+    <img src="${res.img}">
+    <br><br><button onclick="location.reload()">Пройти ще раз</button>
   `;
   document.getElementById('finalResult').classList.remove('hidden');
   document.getElementById('questions').style.display = 'none';
-}
-
-function restartQuest() {
-  answers = new Array(10).fill(null);
-  document.querySelectorAll('.q').forEach((q,i)=> {
-    q.classList.toggle('active', i===0);
-  });
-  document.getElementById('progress').innerHTML = '';
-  document.getElementById('progressText').textContent = 'Питання 1 з 10';
-  document.getElementById('finalResult').classList.add('hidden');
-  document.getElementById('questions').style.display = 'block';
-}
-
-// === КОНСТРУКТОР ===
-function allowDrop(e){e.preventDefault();}
-function drag(e){e.dataTransfer.setData("text", e.target.outerHTML);}
-function drop(e){
-  e.preventDefault();
-  e.target.innerHTML += e.dataTransfer.getData("text");
-  if(isAdmin) saveCatalog();
-}
-
-async function saveCatalog() {
-  if(!isAdmin) return;
-  const data = {};
-  for(let i=1;i<=6;i++) data['s'+i] = document.getElementById('s'+i).innerHTML;
-  const { error } = await supabase.from('catalog').upsert({ id: 1, ...data });
-}
-
-// === ГАЛЕРЕЯ ===
-async function showGallery() {
-  const { data } = await supabase.from('catalog').select('*').single();
-  const titles = ["Паліяниця та мова","Техніка та «чмоні»","Тварини-герої","Чорний гумор","Самоіронія","Підтримка ЗСУ"];
-  let html = '';
-  for(let i=1;i<=6;i++){
-    const content = data?.['s'+i] || '';
-    if(content) html += `<h2>${titles[i-1]}</h2><div class="section">${content}</div>`;
-  }
-  document.getElementById('savedCatalog').innerHTML = html || '<p>Каталог порожній!</p>';
-}
-
-// === ДОДАТИ МЕМ ===
-async function addNewMeme() {
-  if(!isAdmin) return;
-  let src = document.getElementById('newMemeUrl').value;
-  const file = document.getElementById('newMemeFile').files[0];
-  if(file){
-    const { data } = await supabase.storage.from('memes').upload('public/'+Date.now(), file);
-    src = supabase.storage.from('memes').getPublicUrl(data.path).data.publicUrl;
-  }
-  if(src){
-    await supabase.from('memes').insert({ src });
-    alert('Мем додано!');
-  }
+  document.querySelector('.progress-container').style.display = 'none';
 }
 
 // === ВКЛАДКИ ===
@@ -264,11 +278,9 @@ function openTab(id) {
   if(id==='gallery') showGallery();
 }
 
-// Старт
-window.onload = () => {
-  document.getElementById('q1').classList.add('active');
-  showGallery();
-};
+// СТАРТ
+loadMemes();
+updateProgress();
 </script>
 </body>
 </html>
