@@ -119,8 +119,8 @@
 
 <script>
 // ← ТУТ ТВІЙ SUPABASE (якщо не хочеш — просто видали ці 3 рядки і проєкт працюватиме локально)
-const SUPABASE_URL = 'https://твій-проєкт.supabase.co';     // ← заміни або видали
-const SUPABASE_ANON_KEY = 'твій-anon-key';                  // ← заміни або видали
+const SUPABASE_URL = 'https://goklujojesauzxwpdqdp.supabase.co';     // ← заміни або видали
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva2x1am9qZXNhdXp4d3BkcWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTgxNjgsImV4cCI6MjA4MDQzNDE2OH0.iRo0Sz54Us3eeUweqxq4NuYAIjPSIdTWgfCgZhec8Fc';                  // ← заміни або видали
 const supabase = window.supabase?.createClient?.(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const ADMIN_PASS = 'Lyceum53';
@@ -140,15 +140,91 @@ function login() {
 function logout() { location.reload(); }
 
 // === КВЕСТ ===
+let answers = new Array(10).fill(null); // зберігаємо всі відповіді
+
+const emoji = { a: "Palianytsia", b: "Ship", c: "Tractor" }; // можна замінити на емодзі
+
 function ans(q, choice) {
   answers[q-1] = choice;
-  document.getElementById('q'+q).classList.add('hidden');
+
+  // оновлюємо прогрес-бар
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const btn = document.createElement('button');
+    btn.style.padding = '12px 16px';
+    btn.style.margin = '4px';
+    btn.style.borderRadius = '50px';
+    btn.style.fontSize = '1.1em';
+    if (answers[i] === null) {
+      btn.textContent = i+1;
+      btn.style.background = '#333';
+    } else {
+      btn.textContent = emoji[answers[i]];
+      btn.style.background = answers[i] === 'a' ? '#0057b7' : answers[i] === 'b' ? '#d40000' : '#ffd700';
+      btn.style.color = 'white';
+      // клік по вже вибраній — повертаємося до питання!
+      btn.onclick = () => goToQuestion(i+1);
+    }
+    progress.appendChild(btn);
+  }
+
+  document.getElementById('progressText').textContent = 
+    `Питання ${answers.filter(a => a !== null).length + 1} з 10`;
+
+  // ховаємо поточне, показуємо наступне
+  document.querySelectorAll('.q').forEach(q => q.classList.remove('active'));
   if (q < 10) {
-    document.getElementById('q'+(q+1)).classList.remove('hidden');
+    document.getElementById('q'+(q+1)).classList.add('active');
   } else {
     showQuestResult();
   }
 }
+
+function goToQuestion(num) {
+  document.querySelectorAll('.q').forEach(q => q.classList.remove('active'));
+  document.getElementById('q'+num).classList.add('active');
+  document.getElementById('progressText').textContent = `Питання ${num} з 10`;
+}
+
+function showQuestResult() {
+  const count = {a:0, b:0, c:0};
+  answers.forEach(x => x && count[x]++);
+
+  const max = Object.keys(count).reduce((a,b) => count[a] >= count[b] ? a : b);
+
+  const results = {
+    a: {name: "Паляниця", text: "Ти — найсильніший пароль України! Ворог ніколи тебе не вимовить!", img: "https://i.ibb.co/4pQ8hZc/palianytsya1.jpg"},
+    b: {name: "Русскій воєнний корабель", text: "Коротко. Влучно. Історично.", img: "https://i.ibb.co/09T1s1Q/ship.jpg"},
+    c: {name: "Український трактор", text: "Коли ЗСУ ще не доїхали — ти вже тягнеш танк додому!", img: "https://i.ibb.co/4pQ8hZc/tractor1.jpg"}
+  };
+
+  const res = results[max];
+  document.getElementById('finalResult').innerHTML = `
+    <h2>ТИ — ${res.name}!</h2>
+    <p style="font-size:1.6em;">${res.text}</p>
+    <img src="${res.img}">
+    <br><br>
+    <button onclick="restartQuest()">Пройти ще раз</button>
+  `;
+  document.getElementById('finalResult').classList.remove('hidden');
+  document.getElementById('questions').style.display = 'none';
+}
+
+function restartQuest() {
+  answers = new Array(10).fill(null);
+  document.querySelectorAll('.q').forEach((q,i) => {
+    q.classList.remove('active');
+    if (i===0) q.classList.add('active');
+  });
+  document.getElementById('questions').style.display = 'block';
+  document.getElementById('finalResult').classList.add('hidden');
+  document.getElementById('progress').innerHTML = '';
+  document.getElementById('progressText').textContent = 'Питання 1 з 10';
+}
+
+// старт
+document.getElementById('q1').classList.add('active');
 
 function showQuestResult() {
   const count = {a:0, b:0, c:0};
