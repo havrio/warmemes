@@ -2,74 +2,180 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Комічне у мемах воєнного часу — Supabase версія</title>
+<title>Комічне у мемах воєнного часу — 2025</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* Твій попередній CSS тут — body, tabs, meme тощо */
-  body {font-family: Arial; background: linear-gradient(135deg, #0057b7, #ffd700); color: white; margin:0; padding:20px;}
-  .admin {background:#d40000; color:white; padding:15px; text-align:center; display:none;}
-  button {background:#ffd700; color:#000; padding:12px; border:none; border-radius:10px; cursor:pointer;}
+  body {font-family: 'Comic Sans MS', Arial; background: linear-gradient(135deg, #0057b7, #ffd700); color: white; margin:0; padding:20px; min-height:100vh;}
+  h1 {text-align:center; font-size:3em; text-shadow: 3px 3px #000;}
+  .tabs {display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin:30px 0;}
+  .tab {padding:15px 25px; background:#000; color:#ffd700; border:3px solid #ffd700; border-radius:15px; cursor:pointer; font-weight:bold; font-size:1.2em;}
+  .tab.active {background:#ffd700; color:#000;}
+  .content {display:none; background:rgba(0,0,0,0.75); padding:25px; border-radius:20px; max-width:1100px; margin:0 auto;}
+  .content.active {display:block;}
+  .section {background:rgba(0,50,100,0.8); padding:20px; margin:15px 0; border:4px dashed #ffd700; border-radius:15px; min-height:220px;}
+  .meme {width:180px; margin:8px; border:4px solid #fff; border-radius:12px; cursor:grab; box-shadow:0 0 15px #ff0;}
+  .meme:active {cursor:grabbing; transform:scale(1.1);}
+  .meme-bank {display:flex; flex-wrap:wrap; justify-content:center; padding:20px; background:rgba(0,0,0,0.5); border-radius:15px;}
+  button {background:#ffd700; color:#000; padding:12px 25px; margin:10px; font-size:1.1em; border:none; border-radius:10px; cursor:pointer;}
+  button:hover {background:#fff;}
+  .admin {background:#c00; padding:15px; text-align:center; font-weight:bold; display:none;}
+  #adminLogin {text-align:center; margin:20px;}
 </style>
 </head>
 <body>
 <h1>КОМІЧНЕ У МЕМАХ ВОЄННОГО ЧАСУ</h1>
-<div id="auth">
-  <input type="password" id="pass" placeholder="Пароль адміна">
-  <button onclick="login()">Увійти</button>
+
+<div id="adminLogin">
+  <input type="password" id="pass" placeholder="Пароль адміна (якщо маєш)">
+  <button onclick="login()">Увійти як адмін</button>
 </div>
-<div id="adminPanel" class="admin" style="display:none;">АДМІН <button onclick="logout()">Вийти</button></div>
+<div id="adminPanel" class="admin">АДМІН-РЕЖИМ АКТИВОВАНИЙ <button onclick="logout()">Вийти</button></div>
 
 <div class="tabs">
-  <button class="tab active" onclick="openTab('catalog')">Каталог</button>
-  <button class="tab" onclick="openTab('add')">Додати мем</button>
-  <button class="tab" onclick="openTab('categories')">Категорії</button>
+  <div class="tab active" onclick="openTab('constructor')">Конструктор</div>
+  <div class="tab" onclick="openTab('quest')">Квест: Який ти мем?</div>
+  <div class="tab" onclick="openTab('gallery')">Готовий каталог</div>
+  <div class="tab" onclick="openTab('add')">Додати мем</div>
 </div>
 
-<div id="catalog" class="content active"></div>
-<!-- Інші div як раніше -->
+<!-- КОНСТРУКТОР -->
+<div id="constructor" class="content active">
+  <h2 style="text-align:center;">Перетягни меми в розділи</h2>
+  <div id="memeBank" class="meme-bank"></div>
+  <h2 style="text-align:center; margin-top:40px;">Розділи каталогу</h2>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s1">1. Паліяниця та мова</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s2">2. Техніка та «чмоні»</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s3">3. Тварини-герої</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s4">4. Чорний гумор та абсурд</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s5">5. Самоіронія українців</div>
+  <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s6">6. Меми-підтримка ЗСУ</div>
+</div>
+
+<!-- КВЕСТ -->
+<div id="quest" class="content">
+  <h2>Який ти мем воєнного часу?</h2>
+  <div id="finalResult" class="result hidden"></div>
+</div>
+
+<!-- ГАЛЕРЕЯ -->
+<div id="gallery" class="content">
+  <h2>Готовий каталог (глобальний)</h2>
+  <div id="savedCatalog"></div>
+</div>
+
+<!-- ДОДАТИ МЕМ -->
+<div id="add" class="content">
+  <h2>Додати новий мем (адмін)</h2>
+  <input type="file" id="newMemeFile" accept="image/*"><br>
+  <input type="text" id="newMemeUrl" placeholder="або встав посилання на мем"><br>
+  <button onclick="addNewMeme()">Додати в банк мемів</button>
+</div>
 
 <script>
-// Твій Supabase config (заміни на свої з кроку 1)
-const supabaseUrl = 'https://твій-проєкт.supabase.co'; // З дашборду
-const supabaseKey = 'твій-anon-key'; // З дашборду
-const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+// ← ТУТ ТВІЙ SUPABASE (заміни на свої з дашборду)
+const SUPABASE_URL = 'https://abcde.supabase.co';        // ← заміни
+const SUPABASE_ANON_KEY = 'eyJhb...';                    // ← заміни
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const ADMIN_PASS = 'slavaukraini2025';
 let isAdmin = false;
-const ADMIN_PASS = 'slava2025'; // Змінюй!
 
 async function login() {
   if (document.getElementById('pass').value === ADMIN_PASS) {
     isAdmin = true;
-    document.getElementById('auth').style.display = 'none';
+    document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
-    await loadEverything();
-  } else alert('Неправильно!');
+    document.getElementById('add').style.display = 'block';
+    loadMemes();
+  }
+}
+function logout() { location.reload(); }
+
+async function loadMemes() {
+  const { data } = await supabase.from('memes').select('*');
+  const bank = document.getElementById('memeBank');
+  bank.innerHTML = '';
+  data?.forEach(m => {
+    const img = document.createElement('img');
+    img.className = 'meme';
+    img.src = m.src;
+    img.draggable = true;
+    img.ondragstart = drag;
+    bank.appendChild(img);
+  });
+  loadCatalog();
 }
 
-async function loadEverything() {
-  // Завантажити меми
-  const { data: memes } = await supabase.from('memes').select('*');
-  renderCatalog(memes);
-
-  // Завантажити категорії
-  const { data: cats } = await supabase.from('categories').select('*');
-  renderCategories(cats);
+async function loadCatalog() {
+  const { data } = await supabase.from('catalog').select('*').single();
+  if (data) {
+    for (let i = 1; i <= 6; i++) {
+      document.getElementById('s'+i).innerHTML = data['s'+i] || '';
+    }
+  }
+  showGallery();
 }
 
-async function addMeme() {
+async function saveCatalog() {
   if (!isAdmin) return;
-  const src = document.getElementById('imgUrl').value; // Або з file upload
-  const cat = document.getElementById('catSelect').value;
-  const kw = document.getElementById('keywords').value;
-  const { data, error } = await supabase.from('memes').insert([{ src, category: cat, keywords: kw }]);
-  if (error) alert(error); else loadEverything();
+  const catalog = {};
+  for (let i = 1; i <= 6; i++) {
+    catalog['s'+i] = document.getElementById('s'+i).innerHTML;
+  }
+  const { data } = await supabase.from('catalog').select('*').single();
+  if (data) {
+    await supabase.from('catalog').update(catalog).eq('id', data.id);
+  } else {
+    await supabase.from('catalog').insert(catalog);
+  }
 }
 
-// Аналогічно для addCategory, deleteMeme (використовуй supabase.from('table').delete().eq('id', id))
+async function addNewMeme() {
+  if (!isAdmin) return alert('Тільки адмін!');
+  let src = document.getElementById('newMemeUrl').value;
+  const file = document.getElementById('newMemeFile').files[0];
+  if (file) {
+    const { data } = await supabase.storage.from('memes').upload('public/'+Date.now(), file);
+    src = supabase.storage.from('memes').getPublicUrl(data.path).data.publicUrl;
+  }
+  if (src) {
+    await supabase.from('memes').insert({ src });
+    loadMemes();
+  }
+}
 
-function openTab(id) { /* Як раніше */ }
-window.onload = () => { /* Початкове завантаження */ };
+function allowDrop(e){e.preventDefault();}
+function drag(e){e.dataTransfer.setData("text", e.target.outerHTML);}
+function drop(e){
+  e.preventDefault();
+  e.target.innerHTML += e.dataTransfer.getData("text");
+  saveCatalog();
+}
+
+function showGallery(){
+  const titles = ["Паліяниця та мова","Техніка та «чмоні»","Тварини-герої","Чорний гумор та абсурд","Самоіронія українців","Меми-підтримка ЗСУ"];
+  let html = '';
+  for(let i=1;i<=6;i++){
+    const content = document.getElementById('s'+i).innerHTML;
+    if (content) html += `<h2>${titles[i-1]}</h2><div class="section">${content}</div>`;
+  }
+  document.getElementById('savedCatalog').innerHTML = html || '<p>Каталог порожній — розсортуй меми в Конструкторі!</p>';
+}
+
+function openTab(id) {
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`[onclick="openTab('${id}')"]`).classList.add('active');
+  if(id==='gallery') showGallery();
+}
+
+// Квест — той самий (встав сюди старий код квесту, якщо хочеш)
+window.onload = () => {
+  loadMemes();
+  setInterval(loadMemes, 10000); // автооновлення
+};
 </script>
 </body>
 </html>
