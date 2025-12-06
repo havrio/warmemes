@@ -40,10 +40,10 @@
 <div id="adminPanel" class="admin">АДМІН-РЕЖИМ <button onclick="logout()">Вийти</button></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="openTab('constructor')">Конструктор</div>
-  <div class="tab" onclick="openTab('quest')">Квест</div>
-  <div class="tab" onclick="openTab('search')">Пошук за інтенцією</div>
-  <div class="tab" onclick="openTab('gallery')">Готовий каталог</div>
+  <div class="tab active" data-tab="constructor">Конструктор</div>
+  <div class="tab" data-tab="quest">Квест</div>
+  <div class="tab" data-tab="search">Пошук за інтенцією</div>
+  <div class="tab" data-tab="gallery">Готовий каталог</div>
 </div>
 
 <!-- КОНСТРУКТОР -->
@@ -63,7 +63,7 @@
       <option>Підтримка морального духу українського народу</option>
     </select>
     <select id="newDevice">
-      <option value="">Обери засіб</option>
+      <option value="">Обери засіб комічного</option>
       <option>гумор</option>
       <option>іронія</option>
       <option>сатира</option>
@@ -111,7 +111,7 @@
 </div>
 
 <script>
-// Supabase — твій проєкт
+// Supabase
 const supabase = window.supabase.createClient(
   'https://goklujojesauzxwpdqdp.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva2x1am9qZXNhdXp4d3BkcWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTgxNjgsImV4cCI6MjA4MDQzNDE2OH0.iRo0Sz54Us3eeUweqxq4NuYAIjPSIdTWgfCgZhec8Fc'
@@ -131,6 +131,22 @@ function login() {
   } else alert('Неправильно!');
 }
 function logout() { location.reload(); }
+
+// === ВКЛАДКИ — виправлено! ===
+function openTab(tabId) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const content = document.getElementById(tabId);
+  const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+  if (content) content.classList.add('active');
+  if (tab) tab.classList.add('active');
+  if (tabId === 'gallery') showGallery();
+}
+
+// Додаємо onclick до вкладок
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => openTab(tab.getAttribute('data-tab'));
+});
 
 // === ЗАВАНТАЖЕННЯ МЕМІВ ===
 async function loadMemes() {
@@ -168,12 +184,12 @@ async function loadMemes() {
     wrapper.appendChild(img);
     bank.appendChild(wrapper);
   });
-  loadCatalog(); // Завантажуємо розподіл по інтенціях
+  loadCatalog();
 }
 
 // === ДОДАТИ МЕМ ===
 async function addNewMeme() {
-  if (!isAdmin) return;
+  if (!isAdmin) return alert('Тільки адмін!');
   const intent = document.getElementById('newIntent').value;
   const device = document.getElementById('newDevice').value;
   if (!intent || !device) return alert('Обери інтенцію і засіб!');
@@ -191,7 +207,7 @@ async function addNewMeme() {
   }
 }
 
-// === ЗБЕРЕЖЕННЯ ТА ЗАВАНТАЖЕННЯ РОЗПОДІЛУ ===
+// === ЗБЕРЕЖЕННЯ КАТАЛОГУ ===
 async function saveCatalog() {
   if (!isAdmin) return;
   const catalog = {
@@ -214,27 +230,6 @@ async function loadCatalog() {
   showGallery();
 }
 
-// === ПОШУК ===
-async function searchMeme() {
-  const intent = document.getElementById('intentSelect').value;
-  const device = document.getElementById('deviceSelect').value;
-  if (!intent || !device) return alert('Обери обидва параметри!');
-
-  const { data } = await supabase.from('memes').select('*').eq('intent', intent).eq('device', device);
-  const resultDiv = document.getElementById('searchResult');
-  if (!data || data.length === 0) {
-    resultDiv.innerHTML = '<p>Немає мемів з такими параметрами</p>';
-    return;
-  }
-  const meme = data[Math.floor(Math.random() * data.length)];
-  resultDiv.innerHTML = `
-    <img src="${meme.src}">
-    <p><strong>Інтенція:</strong> ${meme.intent}<br>
-       <strong>Засіб:</strong> ${meme.device}</p>
-  `;
-}
-
-// === ГАЛЕРЕЯ ===
 function showGallery() {
   const titles = ["Підтримка морального духу","Висміювання ворога","Ідеалізація особистості","Дискредитація ворога","Підтримка морального духу українського народу"];
   let html = '';
@@ -254,13 +249,20 @@ function drop(e) {
   if (isAdmin) saveCatalog();
 }
 
-// === ВКЛАДКИ ===
-function openTab(id) {
-  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelector(`[onclick="openTab('${id}')"]`).classList.add('active');
-  if (id === 'gallery') showGallery();
+// === ПОШУК ===
+async function searchMeme() {
+  const intent = document.getElementById('intentSelect').value;
+  const device = document.getElementById('deviceSelect').value;
+  if (!intent || !device) return alert('Обери обидва параметри!');
+
+  const { data } = await supabase.from('memes').select('*').eq('intent', intent).eq('device', device);
+  const div = document.getElementById('searchResult');
+  if (!data || data.length === 0) {
+    div.innerHTML = '<p style="color:#ff0;">Немає мемів з такими параметрами</p>';
+    return;
+  }
+  const meme = data[Math.floor(Math.random() * data.length)];
+  div.innerHTML = `<img src="${meme.src}"><p><strong>Інтенція:</strong> ${meme.intent}<br><strong>Засіб:</strong> ${meme.device}</p>`;
 }
 
 // === СТАРТ ===
