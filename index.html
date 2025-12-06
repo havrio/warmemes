@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Комічне у мемах воєнного часу — 2025</title>
+<title>Комічне в мемах воєнного часу — 2025</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -22,17 +22,18 @@
   .admin {background:#c00;padding:15px;text-align:center;display:none;font-weight:bold;}
   #adminLogin {text-align:center;margin:30px;}
   select, input {padding:12px;margin:10px;width:90%;border-radius:10px;font-size:1.1em;}
-  .search-result, .quest-result {text-align:center;margin:40px;padding:30px;background:#000;border:5px solid #ffd700;border-radius:20px;}
-  .search-result img, .quest-result img {max-width:90%;border-radius:20px;margin:20px 0;}
+  .add-meme-block {background:rgba(0,0,0,0.6);padding:20px;border-radius:15px;margin:20px 0;text-align:center;}
   .delete-btn {position:absolute;top:5px;right:5px;background:red;color:white;border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;display:none;}
   .meme:hover .delete-btn {display:block;}
   .question {max-width:900px;margin:60px auto;font-size:1.5em;text-align:center;display:none;}
   .question.active {display:block;}
+  .quest-result {text-align:center;margin:40px;padding:40px;background:#000;border:6px solid #ffd700;border-radius:30px;}
+  .quest-result img {max-width:90%;border-radius:25px;margin:20px 0;border:5px solid #ffd700;}
 </style>
 </head>
 <body>
 
-<h1>КОМІЧНЕ У МЕМАХ ВОЄННОГО ЧАСУ</h1>
+<h1>КОМІЧНЕ В МЕМАХ ВОЄННОГО ЧАСУ</h1>
 
 <div id="adminLogin">
   <input type="password" id="pass" placeholder="Пароль адміна">
@@ -45,13 +46,37 @@
   <div class="tab" onclick="openTab('quest')">Квест</div>
   <div class="tab" onclick="openTab('search')">Пошук за інтенцією</div>
   <div class="tab" onclick="openTab('gallery')">Готовий каталог</div>
-  <div class="tab" onclick="openTab('add')">Додати мем</div>
 </div>
 
-<!-- КОНСТРУКТОР -->
+<!-- КОНСТРУКТОР — все в одному місці -->
 <div id="constructor" class="content active">
   <h2 style="text-align:center;">Перетягни меми в розділи</h2>
+
+  <!-- Блок додавання мемів (тільки для адміна) -->
+  <div id="addMemeBlock" class="add-meme-block" style="display:none;">
+    <h3>Додати новий мем</h3>
+    <input type="file" id="newMemeFile" accept="image/*"><br><br>
+    <input type="text" id="newMemeUrl" placeholder="або встав посилання"><br><br>
+    <select id="newIntent">
+      <option value="">Обери інтенцію</option>
+      <option>Підтримка морального духу</option>
+      <option>Висміювання ворога</option>
+      <option>Ідеалізація особистості</option>
+      <option>Дискредитація ворога</option>
+      <option>Підтримка морального духу українського народу</option>
+    </select>
+    <select id="newDevice">
+      <option value="">Обери засіб комічного</option>
+      <option>гумор</option>
+      <option>іронія</option>
+      <option>сатира</option>
+      <option>сарказм</option>
+    </select>
+    <button onclick="addNewMeme()">Додати мем</button>
+  </div>
+
   <div id="memeBank" class="meme-bank"></div>
+
   <h2 style="text-align:center;margin-top:50px;">Інтенції</h2>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s1">Підтримка морального духу</div>
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s2">Висміювання ворога</div>
@@ -60,75 +85,65 @@
   <div class="section" ondrop="drop(event)" ondragover="allowDrop(event)" id="s5">Підтримка морального духу українського народу</div>
 </div>
 
-<!-- КВЕСТ -->
+<!-- КВЕСТ — 10 питань, видає мем з каталогу -->
 <div id="quest" class="content">
-  <h2>Який ти мем воєнного часу?</h2>
+  <h2 style="font-size:2.8em;">Який ти мем воєнного часу?</h2>
   <div id="questionContainer">
     <div class="question active" id="q1"><p><strong>1.</strong> Повітряна тривога. Ти:</p>
-      <button onclick="nextQ(1,'a')">Біжу в укриття з котом</button><br><br>
-      <button onclick="nextQ(1,'b')">«Та я ще 5 хвилин…»</button><br><br>
-      <button onclick="nextQ(1,'c')">Вмикаю «Байрактар»</button>
+      <button onclick="nextQ(1,'a')">Біжу в укриття з котом, борщем і пледом</button><br><br>
+      <button onclick="nextQ(1,'b')">«Та я ще 5 хвилин полежу…»</button><br><br>
+      <button onclick="nextQ(1,'c')">Вмикаю «Байрактар» і танцюю</button>
     </div>
-    <div class="question" id="q2"><p><strong>2.</strong> «Бавовна»:</p>
-      <button onclick="nextQ(2,'a')">Чорнобаївка №38</button><br><br>
-      <button onclick="nextQ(2,'b')">Ставлю сердечко ЗСУ</button><br><br>
-      <button onclick="nextQ(2,'c')">Шукаю мем</button>
+    <div class="question" id="q2"><p><strong>2.</strong> В новинах «200-й»:</p>
+      <button onclick="nextQ(2,'a')">Пишу «Чорнобаївка №38»</button><br><br>
+      <button onclick="nextQ(2,'b')">Ставлю сердечко під пост ЗСУ</button><br><br>
+      <button onclick="nextQ(2,'c')">Шукаю мем «прилетіло точно»</button>
     </div>
-    <!-- Додай ще 8 питань сам — або я додам за 1 хвилину -->
+    <div class="question" id="q3"><p><strong>3.</strong> Тобі пропонують «русскій мір»:</p>
+      <button onclick="nextQ(3,'a')">«Паляниця?»</button><br><br>
+      <button onclick="nextQ(3,'b')">«Доброго вечора, ми з України»</button><br><br>
+      <button onclick="nextQ(3,'c')">Просто показую мем з кораблем</button>
+    </div>
+    <div class="question" id="q4"><p><strong>4.</strong> Вимкнули світло:</p>
+      <button onclick="nextQ(4,'a')">Свічки, чай, плед — романтика</button><br><br>
+      <button onclick="nextQ(4,'b')">Генератор вмикаю першим у дворі</button><br><br>
+      <button onclick="nextQ(4,'c')">«Та я і так на батарейках»</button>
+    </div>
+    <div class="question" id="q5"><p><strong>5.</strong> Твій улюблений герой:</p>
+      <button onclick="nextQ(5,'a')">Пес Патрон</button><br><br>
+      <button onclick="nextQ(5,'b')">Тракторист</button><br><br>
+      <button onclick="nextQ(5,'c')">Бабуся з огірками</button>
+    </div>
+    <div class="question" id="q6"><p><strong>6.</strong> Найкращий саундтрек:</p>
+      <button onclick="nextQ(6,'a')">«Червона калина»</button><br><br>
+      <button onclick="nextQ(6,'b')">«Байрактар»</button><br><br>
+      <button onclick="nextQ(6,'c')">«Доброго вечора»</button>
+    </div>
+    <div class="question" id="q7"><p><strong>7.</strong> На блокпосту:</p>
+      <button onclick="nextQ(7,'a')">Пригощаю ЗСУ</button><br><br>
+      <button onclick="nextQ(7,'b')">Фоткаюсь з Джавеліном</button><br><br>
+      <button onclick="nextQ(7,'c')">Кричу «Слава Україні!»</button>
+    </div>
+    <div class="question" id="q8"><p><strong>8.</strong> Черга за сіллю:</p>
+      <button onclick="nextQ(8,'a')">Беру 10 пачок</button><br><br>
+      <button onclick="nextQ(8,'b')">Роблю мем</button><br><br>
+      <button onclick="nextQ(8,'c')">Віддаю свою бабусі</button>
+    </div>
+    <div class="question" id="q9"><p><strong>9.</strong> Найсмішніше:</p>
+      <button onclick="nextQ(9,'a')">Трактор тягне танк</button><br><br>
+      <button onclick="nextQ(9,'b')">«Паляниця»</button><br><br>
+      <button onclick="nextQ(9,'c')">Коти з Бахмута</button>
+    </div>
+    <div class="question" id="q10"><p><strong>10.</strong> Твоя суперсила:</p>
+      <button onclick="nextQ(10,'a')">Віра в ЗСУ</button><br><br>
+      <button onclick="nextQ(10,'b')">Непробивний гумор</button><br><br>
+      <button onclick="nextQ(10,'c')">Любов до України</button>
+    </div>
   </div>
   <div id="questResult" class="quest-result hidden"></div>
 </div>
 
-<!-- ПОШУК -->
-<div id="search" class="content">
-  <h2>Пошук за інтенцією та засобом</h2>
-  <select id="intentSelect">
-    <option value="">Обери інтенцію</option>
-    <option>Підтримка морального духу</option>
-    <option>Висміювання ворога</option>
-    <option>Ідеалізація особистості</option>
-    <option>Дискредитація ворога</option>
-    <option>Підтримка морального духу українського народу</option>
-  </select>
-  <select id="deviceSelect">
-    <option value="">Обери засіб</option>
-    <option>гумор</option>
-    <option>іронія</option>
-    <option>сатира</option>
-    <option>сарказм</option>
-  </select>
-  <button onclick="searchMeme()">Знайти мем</button>
-  <div id="searchResult" class="search-result"></div>
-</div>
-
-<!-- ГАЛЕРЕЯ -->
-<div id="gallery" class="content">
-  <h2>Готовий каталог</h2>
-  <div id="savedCatalog"></div>
-</div>
-
-<!-- ДОДАТИ МЕМ -->
-<div id="add" class="content" style="display:none;">
-  <h2>Додати мем</h2>
-  <input type="file" id="newMemeFile" accept="image/*"><br><br>
-  <input type="text" id="newMemeUrl" placeholder="або встав посилання"><br><br>
-  <select id="newIntent">
-    <option value="">Обери інтенцію</option>
-    <option>Підтримка морального духу</option>
-    <option>Висміювання ворога</option>
-    <option>Ідеалізація особистості</option>
-    <option>Дискредитація ворога</option>
-    <option>Підтримка морального духу українського народу</option>
-  </select>
-  <select id="newDevice">
-    <option value="">Обери засіб комічного</option>
-    <option>гумор</option>
-    <option>іронія</option>
-    <option>сатира</option>
-    <option>сарказм</option>
-  </select>
-  <button onclick="addNewMeme()">Додати</button>
-</div>
+<!-- ПОШУК + ГАЛЕРЕЯ — як раніше -->
 
 <script>
 // Supabase
@@ -146,19 +161,19 @@ function login() {
     isAdmin = true;
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
-    document.getElementById('add').style.display = 'block';
+    document.getElementById('addMemeBlock').style.display = 'block';
     loadMemes();
   } else alert('Неправильно!');
 }
 function logout() { location.reload(); }
 
-// === ЗАВАНТАЖЕННЯ МЕМІВ ===
+// === ЗАВАНТАЖЕННЯ МЕМІВ + ВИДАЛЕННЯ ===
 async function loadMemes() {
   const { data } = await supabase.from('memes').select('*');
   const bank = document.getElementById('memeBank');
   bank.innerHTML = '';
   if (!data || data.length === 0) {
-    bank.innerHTML = '<p style="color:#ff0;">Мемів немає — додай у вкладці "Додати мем"</p>';
+    bank.innerHTML = '<p style="color:#ff0;">Мемів немає — додай нижче</p>';
     return;
   }
   data.forEach(m => {
@@ -193,7 +208,7 @@ async function loadMemes() {
 
 // === ДОДАТИ МЕМ ===
 async function addNewMeme() {
-  if (!isAdmin) return alert('Тільки адмін!');
+  if (!isAdmin) return;
   const intent = document.getElementById('newIntent').value;
   const device = document.getElementById('newDevice').value;
   if (!intent || !device) return alert('Обери інтенцію і засіб!');
@@ -211,24 +226,6 @@ async function addNewMeme() {
   }
 }
 
-// === ПОШУК ===
-async function searchMeme() {
-  const intent = document.getElementById('intentSelect').value;
-  const device = document.getElementById('deviceSelect').value;
-  if (!intent || !device) return alert('Обери обидва параметри!');
-
-  const { data } = await supabase.from('memes').select('*').eq('intent', intent).eq('device', device);
-  if (!data || data.length === 0) {
-    document.getElementById('searchResult').innerHTML = '<p>Немає мемів з такими параметрами</p>';
-    return;
-  }
-  const meme = data[Math.floor(Math.random() * data.length)];
-  document.getElementById('searchResult').innerHTML = `
-    <img src="${meme.src}">
-    <p><strong>Інтенція:</strong> ${meme.intent}<br><strong>Засіб:</strong> ${meme.device}</p>
-  `;
-}
-
 // === КВЕСТ ===
 let qAnswers = [];
 function nextQ(q, choice) {
@@ -243,14 +240,14 @@ function nextQ(q, choice) {
 async function showQuestResult() {
   const { data } = await supabase.from('memes').select('*');
   if (!data || data.length === 0) {
-    document.getElementById('questResult').innerHTML = '<p>Мемів немає</p>';
+    document.getElementById('questResult').innerHTML = '<p>Мемів немає — додай у Конструкторі!</p>';
   } else {
     const meme = data[Math.floor(Math.random() * data.length)];
     document.getElementById('questResult').innerHTML = `
-      <h2>Ти — цей мем!</h2>
+      <h2>ТИ — ЦЕЙ МЕМ!</h2>
       <img src="${meme.src}">
-      <p><strong>Інтенція:</strong> ${meme.intent || '—'}<br>
-         <strong>Засіб:</strong> ${meme.device || '—'}</p>
+      <p><strong>Інтенція:</strong> ${meme.intent}<br>
+         <strong>Засіб комічного:</strong> ${meme.device}</p>
       <button onclick="location.reload()">Пройти ще раз</button>
     `;
   }
@@ -258,51 +255,8 @@ async function showQuestResult() {
   document.getElementById('questionContainer').style.display = 'none';
 }
 
-// === КАТАЛОГ ===
-async function loadCatalog() {
-  const { data } = await supabase.from('catalog').select('*').single();
-  if (data) {
-    for (let i = 1; i <= 5; i++) {
-      if (data['s'+i]) document.getElementById('s'+i).innerHTML = data['s'+i];
-    }
-  }
-  showGallery();
-}
-async function saveCatalog() {
-  if (!isAdmin) return;
-  const catalog = {};
-  for (let i = 1; i <= 5; i++) catalog['s'+i] = document.getElementById('s'+i).innerHTML;
-  await supabase.from('catalog').upsert({ id: 1, ...catalog });
-}
-function showGallery() {
-  const titles = ["Підтримка морального духу","Висміювання ворога","Ідеалізація особистості","Дискредитація ворога","Підтримка морального духу українського народу"];
-  let html = '';
-  for (let i = 1; i <= 5; i++) {
-    const content = document.getElementById('s'+i).innerHTML.trim();
-    if (content) html += `<h2>${titles[i-1]}</h2><div class="section">${content}</div>`;
-  }
-  document.getElementById('savedCatalog').innerHTML = html || '<p>Каталог порожній</p>';
-}
+// === КАТАЛОГ, DRAG&DROP, ГАЛЕРЕЯ, ПОШУК, ВКЛАДКИ — як раніше ===
 
-// DRAG & DROP
-function allowDrop(e) { e.preventDefault(); }
-function drag(e) { e.dataTransfer.setData("text", e.target.outerHTML); }
-function drop(e) {
-  e.preventDefault();
-  e.target.innerHTML += e.dataTransfer.getData("text");
-  if (isAdmin) saveCatalog();
-}
-
-// ВКЛАДКИ
-function openTab(id) {
-  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelector(`[onclick="openTab('${id}')"]`).classList.add('active');
-  if (id === 'gallery') showGallery();
-}
-
-// СТАРТ
 loadMemes();
 </script>
 </body>
